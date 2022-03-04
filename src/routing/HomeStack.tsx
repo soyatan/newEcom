@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {Text, SafeAreaView, View, TextInput} from 'react-native';
-//import Feather from 'react-native-vector-icons/Feather';
+import Feather from 'react-native-vector-icons/Feather';
 import HomeScreen from './../screens/HomeScreen/index';
 import ProductScreen from './../screens/ProductScreen/index';
 
@@ -26,6 +26,7 @@ const HeaderComponent = ({
           flexDirection: 'row',
           alignItems: 'center',
         }}>
+        <Feather name="search" size={20} />
         <TextInput
           style={{height: 40, marginLeft: 10}}
           placeholder="Search.."

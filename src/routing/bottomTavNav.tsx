@@ -10,9 +10,10 @@ const BottomTabNav = () => {
   return (
     <Tab.Navigator
       screenOptions={{
-        tabBarShowLabel: false,
+        tabBarShowLabel: true,
         tabBarInactiveTintColor: '#ffbd7d',
         tabBarActiveTintColor: '#e47911',
+        headerShown: false,
       }}>
       <Tab.Screen
         component={HomeStack}
