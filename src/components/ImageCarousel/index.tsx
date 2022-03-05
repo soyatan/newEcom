@@ -29,6 +29,12 @@ const ImageCarousel = ({images}: {images: string[]}) => {
         )}
         horizontal
         showsHorizontalScrollIndicator={false}
+        snapToInterval={windowWidth - 20}
+        snapToAlignment={'center'}
+        decelerationRate={'fast'}
+        viewabilityConfig={{
+          viewAreaCovaragePercentTreshold: 50,
+        }}
       />
       <View style={styles.dots}>
         {images.map((image, index) => (

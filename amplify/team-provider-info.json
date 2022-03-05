@@ -1,0 +1,20 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-newecom-dev-95843-authRole",
+      "UnauthRoleArn": "arn:aws:iam::290589368621:role/amplify-newecom-dev-95843-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::290589368621:role/amplify-newecom-dev-95843-authRole",
+      "Region": "eu-west-1",
+      "DeploymentBucketName": "amplify-newecom-dev-95843-deployment",
+      "UnauthRoleName": "amplify-newecom-dev-95843-unauthRole",
+      "StackName": "amplify-newecom-dev-95843",
+      "StackId": "arn:aws:cloudformation:eu-west-1:290589368621:stack/amplify-newecom-dev-95843/b518fb00-9c51-11ec-9863-0ae1b096f123",
+      "AmplifyAppId": "dnezjk9ivaabk"
+    },
+    "categories": {
+      "auth": {
+        "newecom24af4f47": {}
+      }
+    }
+  }
+}

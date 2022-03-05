@@ -14,6 +14,12 @@ import {StatusBar, StyleSheet, Text, useColorScheme, View} from 'react-native';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 import Router from './src/routing/index';
 
+import Amplify from 'aws-amplify';
+import {withAuthenticator} from 'aws-amplify-react-native';
+import awsmobile from './src/aws-exports';
+
+Amplify.configure(awsmobile);
+
 const App = () => {
   const isDarkMode = useColorScheme() === 'dark';
 
@@ -55,4 +61,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default App;
+export default withAuthenticator(App);

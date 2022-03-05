@@ -6,6 +6,7 @@ import Button from './../../components/Button/index';
 import CartProductItem from './../../components/CartProductItem/index';
 
 const ShoppingCartScreen = () => {
+  const [products, setProducts] = useState(second);
   const navigation = useNavigation();
 
   const totalPrice = products.reduce(
