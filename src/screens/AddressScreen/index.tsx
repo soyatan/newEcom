@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -12,7 +12,9 @@ import {Picker} from '@react-native-picker/picker';
 import countryList from 'country-list';
 import Button from '../../components/Button';
 import styles from './styles';
-
+import {usestripe} from '@stripe/stripe-react-native';
+import {useNavigation, useRoute} from '@react-navigation/native';
+import {graphqlOperation} from 'aws-amplify';
 const countries = countryList.getData();
 
 const AddressScreen = () => {
@@ -24,8 +26,97 @@ const AddressScreen = () => {
   const [addressError, setAddressError] = useState('');
 
   const [city, setCity] = useState('');
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
 
-  console.log(fullname);
+  const {initPaymentSheet, presentPaymentSheet} = useStripe();
+  const navigation = useNavigation();
+  const route = useRoute();
+  const amount = Math.floor(route.params?.totalPrice * 100 || 0);
+
+  useEffect(() => {
+    fetchPaymentIntent();
+  }, []);
+
+  useEffect(() => {
+    if (clientSecret) {
+      initializePaymentSheet();
+    }
+  }, [clientSecret]);
+
+  const fetchPaymentIntent = async () => {
+    const response = await API.graphql(
+      graphqlOperation(createPaymentIntent, {amount}),
+    );
+    setClientSecret(response.data.createPaymentIntent.clientSecret);
+  };
+
+  const initializePaymentSheet = async () => {
+    if (!clientSecret) {
+      return;
+    }
+    const {error} = await initPaymentSheet({
+      paymentIntentClientSecret: clientSecret,
+    });
+    console.log('success');
+    if (error) {
+      Alert.alert(error);
+    }
+  };
+
+  const openPaymentSheet = async () => {
+    if (!clientSecret) {
+      return;
+    }
+    const {error} = await presentPaymentSheet({clientSecret});
+
+    if (error) {
+      Alert.alert(`Error code: ${error.code}`, error.message);
+    } else {
+      saveOrder();
+      Alert.alert('Success', 'Your payment is confirmed!');
+    }
+  };
+
+  const saveOrder = async () => {
+    // get user details
+    const userData = await Auth.currentAuthenticatedUser();
+    // create a new order
+    const newOrder = await DataStore.save(
+      new Order({
+        userSub: userData.attributes.sub,
+        fullName: fullname,
+        phoneNumber: phone,
+        country,
+        city,
+        address,
+      }),
+    );
+
+    // fetch all cart items
+    const cartItems = await DataStore.query(CartProduct, cp =>
+      cp.userSub('eq', userData.attributes.sub),
+    );
+
+    // attach all cart items to the order
+    await Promise.all(
+      cartItems.map(cartItem =>
+        DataStore.save(
+          new OrderProduct({
+            quantity: cartItem.quantity,
+            option: cartItem.option,
+            productID: cartItem.productID,
+            orderID: newOrder.id,
+          }),
+        ),
+      ),
+    );
+
+    // delete all cart items
+    await Promise.all(cartItems.map(cartItem => DataStore.delete(cartItem)));
+
+    // redirect home
+    navigation.navigate('home');
+  };
 
   const onCheckout = () => {
     if (addressError) {
@@ -43,7 +134,8 @@ const AddressScreen = () => {
       return;
     }
 
-    console.warn('Success. CHeckout');
+    // handle payments
+    openPaymentSheet();
   };
 
   const validateAddress = () => {

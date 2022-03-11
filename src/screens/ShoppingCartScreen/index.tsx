@@ -1,34 +1,82 @@
-import React from 'react';
-import {View, StyleSheet, FlatList, Text} from 'react-native';
+import React, {useState, useEffect} from 'react';
+import {
+  View,
+  StyleSheet,
+  FlatList,
+  Text,
+  ActivityIndicator,
+} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import products from '../../data/cart';
 import Button from './../../components/Button/index';
 import CartProductItem from './../../components/CartProductItem/index';
+import {CartProduct} from '../../models';
+import {Auth, DataStore} from 'aws-amplify';
+import {Product} from '../../models';
 
 const ShoppingCartScreen = () => {
-  const [products, setProducts] = useState(second);
+  const [cartProducts, setCartProducts] = useState<CartProduct[]>([]);
   const navigation = useNavigation();
 
-  const totalPrice = products.reduce(
-    (summedPrice, product) =>
-      summedPrice + product.item.price * product.quantity,
-    0,
-  );
+  const fetchCartProducts = async () => {
+    const userData = await Auth.currentAuthenticatedUser();
 
-  const onCheckout = () => {
-    navigation.navigate('Address');
+    DataStore.query(CartProduct, cp =>
+      cp.userSub('eq', userData.attributes.sub),
+    ).then(setCartProducts);
   };
 
+  useEffect(() => {
+    fetchCartProducts();
+  }, []);
+  useEffect(() => {
+    if (cartProducts.filter(cp => !cp.product).length === 0) {
+      return;
+    }
+
+    const fetchProducts = async () => {
+      // query all products that are used in cart
+      const products = await Promise.all(
+        cartProducts.map(cartProduct =>
+          DataStore.query(Product, cartProduct.productID),
+        ),
+      );
+
+      // assign the products to the cart items
+      setCartProducts(currentCartProducts =>
+        currentCartProducts.map(cartProduct => ({
+          ...cartProduct,
+          product: products.find(p => p.id === cartProduct.productID),
+        })),
+      );
+    };
+
+    fetchProducts();
+  }, [cartProducts]);
+
+  const totalPrice = cartProducts.reduce(
+    (summedPrice, product) =>
+      summedPrice + (product?.product?.price || 0) * product.quantity,
+    0,
+  );
+  const onCheckout = () => {
+    navigation.navigate('Address', {totalPrice});
+  };
+
+  if (cartProducts.filter(cp => !cp.product).length !== 0) {
+    return <ActivityIndicator />;
+  }
   return (
-    <View style={styles.page}>
+    <View style={{padding: 10}}>
+      {/* Render Product Componet */}
       <FlatList
-        data={products}
+        data={cartProducts}
         renderItem={({item}) => <CartProductItem cartItem={item} />}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={() => (
           <View>
             <Text style={{fontSize: 18}}>
-              Subtotal ({products.length} items):{' '}
+              Subtotal ({cartProducts.length} items):{' '}
               <Text style={{color: '#e47911', fontWeight: 'bold'}}>
                 ${totalPrice.toFixed(2)}
               </Text>
@@ -38,7 +86,7 @@ const ShoppingCartScreen = () => {
               onPress={onCheckout}
               containerStyles={{
                 backgroundColor: '#f7e300',
-                bordercolor: '#c7b702',
+                borderColor: '#c7b702',
               }}
             />
           </View>
@@ -47,11 +95,5 @@ const ShoppingCartScreen = () => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  page: {
-    padding: 10,
-  },
-});
 
 export default ShoppingCartScreen;
