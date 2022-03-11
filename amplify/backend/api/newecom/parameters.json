@@ -1,0 +1,6 @@
+{
+  "AppSyncApiName": "newecom",
+  "DynamoDBBillingMode": "PAY_PER_REQUEST",
+  "DynamoDBEnableServerSideEncryption": false,
+  "AuthModeLastUpdated": "2022-03-10T21:20:17.972Z"
+}

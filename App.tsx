@@ -15,10 +15,11 @@ import {Colors} from 'react-native/Libraries/NewAppScreen';
 import Router from './src/routing/index';
 
 import Amplify from 'aws-amplify';
-import {withAuthenticator} from 'aws-amplify-react-native';
-import awsmobile from './src/aws-exports';
 
-Amplify.configure(awsmobile);
+import config from './src/aws-exports';
+import {withAuthenticator} from 'aws-amplify-react-native';
+
+Amplify.configure(config);
 
 const App = () => {
   const isDarkMode = useColorScheme() === 'dark';
@@ -61,4 +62,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default withAuthenticator(App);
+export default withAuthenticator(App, {usernameAttributes: 'email'});

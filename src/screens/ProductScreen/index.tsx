@@ -1,19 +1,37 @@
 import {Picker} from '@react-native-picker/picker';
 import {useRoute} from '@react-navigation/native';
-import React, {useState} from 'react';
-import {View, Text, ScrollView} from 'react-native';
+import React, {useState, useEffect} from 'react';
+import {View, Text, ScrollView, ActivityIndicator} from 'react-native';
+import {DataStore} from 'aws-amplify';
+import {Product} from '../../models';
+
 import Button from '../../components/Button';
 import ImageCarousel from '../../components/ImageCarousel';
 import QuantitySelector from '../../components/QuantitySelector';
-import product from '../../data/product';
 import styles from './styles';
 
 const ProductScreen = () => {
-  const [selectedOption, setselectedOption] = useState(
-    product.options ? product.options[0] : null,
-  );
+  const [selectedOption, setselectedOption] = useState<string | null>(null);
+  const [product, setproduct] = useState<Product | undefined>(undefined);
   const [quantity, setQuantity] = useState(1);
   const route = useRoute();
+
+  useEffect(() => {
+    if (!route.params?.id) {
+      return;
+    }
+    DataStore.query(Product, route.params.id).then(setproduct);
+  }, [route.params?.id]);
+  useEffect(() => {
+    if (product?.options) {
+      setselectedOption(product.options[0]);
+    }
+  }, [product]);
+
+  if (!product) {
+    return <ActivityIndicator />;
+  }
+
   return (
     <ScrollView style={styles.root}>
       <Text style={styles.title}>{product.title}</Text>
